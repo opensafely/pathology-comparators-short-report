@@ -20,7 +20,7 @@ def make_variable(code, index_date):
                 returning="numeric_value",
                 find_last_match_in_period=True,
                 return_expectations={
-                    "incidence": 0.1,
+                    "incidence": 0.2,
                     "float": {"distribution": "normal", "mean": 10, "stddev": 1},
                 },
             )
@@ -62,7 +62,7 @@ def make_variable(code, index_date):
             patients.satisfying(
                 f"value_{code}",
                 return_expectations={
-                    "incidence": 0.1,
+                    "incidence": 0.2,
                 },
             )
         )
