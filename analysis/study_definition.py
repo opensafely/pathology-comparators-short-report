@@ -1,31 +1,34 @@
 
 # Import functions
-import json
-import pandas as pd
-
 from cohortextractor import (
     StudyDefinition, 
-    patients, 
-    codelist, 
-    Measure
+    patients
 )
 
+index_date = '2021-10-01'
+
 # Import codelists
-from codelists import codelist, ld_codes, nhse_care_homes_codes
+from codelists import path_tests
 
-from config import start_date, end_date, codelist_path, demographics
+# create new list from codelist for use creating a string to check for any test being present
+test_list = [f'flag_{c}' for c in path_tests]
 
-codelist_df = pd.read_csv(codelist_path)
-codelist_expectation_codes = codelist_df['code'].unique()
+from loop_variables import make_variable
 
+# create function to loop through imported variables for each code in codelist
+def loop_over_codes(code_list):
+    variables = {}
+    for code in code_list:
+        variables.update(make_variable(code, index_date))
+    return variables
 
-# Specifiy study defeinition
+# Specify study definition
 
 study = StudyDefinition(
-    index_date=start_date,
+    index_date=index_date,
     # Configure the expectations framework
     default_expectations={
-        "date": {"earliest": start_date, "latest": end_date},
+        "date": {"earliest": index_date, "latest": "index_date + 6 days"},
         "rate": "exponential_increase",
         "incidence": 0.1,
     },
@@ -33,9 +36,7 @@ study = StudyDefinition(
     population=patients.satisfying(
         """
         registered AND
-        (NOT died) AND
-        (sex = 'F' OR sex='M') AND
-        (age_band != 'missing')
+        any_test
         """,
 
         registered=patients.registered_as_of(
@@ -43,20 +44,10 @@ study = StudyDefinition(
             return_expectations={"incidence": 0.9},
         ),
 
-        died=patients.died_from_any_cause(
-            on_or_before="index_date",
-            returning="binary_flag",
-            return_expectations={"incidence": 0.1}
-        ),
     ),
 
-    age=patients.age_as_of(
-        "index_date",
-        return_expectations={
-            "rate": "universal",
-            "int": {"distribution": "population_ages"},
-        },
-    ),
+
+    ##### basic demographics ###
 
     age_band=patients.categorised_as(
         {
@@ -85,9 +76,10 @@ study = StudyDefinition(
                 }
             },
         },
-
+        age=patients.age_as_of(
+            "index_date",
+        )
     ),
-
 
     sex=patients.sex(
         return_expectations={
@@ -117,90 +109,61 @@ study = StudyDefinition(
             "South East": 0.2, }}}
     ),
     
-    imd=patients.address_as_of(
-        "index_date",
-        returning="index_of_multiple_deprivation",
-        round_to_nearest=100,
+
+    ### COMPARATORS ##### 
+    # for each code in codelist we return: 
+    #   * numeric 
+    #   * comparator
+    #   * flag for having a comparator or not
+    #   * flag for having test (with numeric value)
+
+    **loop_over_codes(path_tests),
+
+    # flag for any test result present
+    any_test=patients.satisfying(
+        f"{' OR '.join(test_list)}", # `flag_12345678 OR flag_23456789 .....`
         return_expectations={
-            "rate": "universal",
-            "category": {"ratios": {"100": 0.2, "200": 0.2, "300": 0.2, "400": 0.2, "500": 0.2}},
+            "incidence": 0.5,
+                
         },
     ),
-
-    learning_disability=patients.with_these_clinical_events(
-        ld_codes,
-        on_or_before="index_date",
-        returning="binary_flag",
-        return_expectations={"incidence": 0.01, },
-    ),
-    
-    care_home_status=patients.with_these_clinical_events(
-        nhse_care_homes_codes,
-        returning="binary_flag",
-        on_or_before="index_date",
-        return_expectations={"incidence": 0.2}
-    ),
-
-
-    event =patients.with_these_clinical_events(
-        codelist=codelist,
-        between=["index_date", "last_day_of_month(index_date)"],
-        returning="binary_flag",
-        return_expectations={"incidence": 0.5}
-    ),
-
-    event_code=patients.with_these_clinical_events(
-        codelist=codelist,
-        between=["index_date", "last_day_of_month(index_date)"],
-        returning="code",
-        return_expectations={"category": {
-            "ratios": {x: 1/len(codelist_expectation_codes) for x in codelist_expectation_codes}}, }
-    ),
+ 
     
 )
 
-# Create default measures
-measures = [
+# # Create default measures
+# measures = [
 
-    Measure(
-        id="event_code_rate",
-        numerator="event",
-        denominator="population",
-        group_by=["event_code"],
-        small_number_suppression=True
-    ),
+#     Measure(
+#         id="event_code_rate",
+#         numerator="event",
+#         denominator="population",
+#         group_by=["event_code"],
+#         small_number_suppression=True
+#     ),
 
-    Measure(
-        id="practice_rate",
-        numerator="event",
-        denominator="population",
-        group_by=["practice"],
-        small_number_suppression=False
-    ),
+#     Measure(
+#         id="practice_rate",
+#         numerator="event",
+#         denominator="population",
+#         group_by=["practice"],
+#         small_number_suppression=False
+#     ),
 
+# ]
 
-
-]
-
-
-#Add demographics measures
-
-for d in demographics:
-
-    if d == 'imd':
-        apply_suppression = False
+# measure rate of comparators being present for each test:
+# for c in test_list:
     
-    else:
-        apply_suppression = True
+    # m = Measure(
+    #     id=f'{d}_comparator_rate',
+    #     numerator="event",
+    #     denominator="population",
+    #     group_by=[d],
+    #     small_number_suppression=apply_suppression
+    # )
     
-    m = Measure(
-        id=f'{d}_rate',
-        numerator="event",
-        denominator="population",
-        group_by=[d],
-        small_number_suppression=apply_suppression
-    )
-    
-    measures.append(m)
+    # measures.append(m)
+
 
     
