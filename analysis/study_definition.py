@@ -2,7 +2,8 @@
 # Import functions
 from cohortextractor import (
     StudyDefinition, 
-    patients
+    patients, 
+    Measure
 )
 
 index_date = '2021-10-01'
@@ -127,43 +128,26 @@ study = StudyDefinition(
                 
         },
     ),
- 
     
 )
 
-# # Create default measures
-# measures = [
+# # Create measures
+measures = list()
 
-#     Measure(
-#         id="event_code_rate",
-#         numerator="event",
-#         denominator="population",
-#         group_by=["event_code"],
-#         small_number_suppression=True
-#     ),
 
-#     Measure(
-#         id="practice_rate",
-#         numerator="event",
-#         denominator="population",
-#         group_by=["practice"],
-#         small_number_suppression=False
-#     ),
-
-# ]
-
-# measure rate of comparators being present for each test:
-# for c in test_list:
+for code in path_tests:
     
-    # m = Measure(
-    #     id=f'{d}_comparator_rate',
-    #     numerator="event",
-    #     denominator="population",
-    #     group_by=[d],
-    #     small_number_suppression=apply_suppression
-    # )
+    m = Measure(
+
+        # rate of comparators being present for each test:
+        id=f'{code}_comparator_rate',
+        numerator=f"comparator_flag_{code}",
+        denominator=f"flag_{code}",
+        group_by="population",
+        #small_number_suppression=apply_suppression
+    )
     
-    # measures.append(m)
+    measures.append(m)
 
 
     
