@@ -35,7 +35,7 @@ actions:
       needs: [generate_measures]
       outputs:
         moderately_sensitive:
-          tables: output/comparator_rates_per_test.csv
+          tables: output/*_per_test.csv
 
   
   # create_notebook:
