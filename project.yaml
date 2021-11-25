@@ -24,7 +24,11 @@ actions:
       needs: [generate_study_population]
       outputs:
         moderately_sensitive:
-          measure_csv: output/measure_*_comparator_rate.csv
+          measure_csv_1: output/measure_*_rate.csv
+          measure_csv_2: output/measure_*_rate_by_region.csv
+          measure_csv_3: output/measure_*_rate_by_comparator.csv
+          measure_csv_4: output/measure_*_rate_by_value.csv
+          # note the weekly files are not stored, only the compiled file
   
   calculate_rates:
       run: python:latest python analysis/rate_calculations.py
