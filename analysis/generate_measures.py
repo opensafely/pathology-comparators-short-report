@@ -6,7 +6,7 @@ measures = list()
 
 for code in path_tests:
     m = Measure(
-        # rate of comparators being present for each test:
+        # 1. Overall rate of comparators being present for each test:
         id=f'{code}_comparator_rate',
         numerator=f"comparator_flag_{code}",
         denominator=f"flag_{code}",
@@ -15,10 +15,8 @@ for code in path_tests:
     )
     measures.append(m)
 
-
-for code in path_tests:
     m = Measure(
-        # rate of comparators being present for each test, split by region:
+        # 2. Overall rate of comparators being present for each test, split by region:
         id=f'{code}_comparator_rate_by_region',
         numerator=f"comparator_flag_{code}",
         denominator=f"flag_{code}",
@@ -27,24 +25,23 @@ for code in path_tests:
     )
     measures.append(m)
 
-for code in path_tests:
     m = Measure(
-        # rate of comparators being present for each test, split by comparator:
+        # 3. rate of comparators being present for each test, split by comparator (simplified):
         id=f'{code}_comparator_rate_by_comparator',
-        numerator=f"comparator_flag_{code}",
+        numerator=f"comparator_flag_{code}", # this won't produce a figure for "=" but we can calculate by subtraction
         denominator=f"flag_{code}",  ###### could use smaller denominator here...
-        group_by=f"comparator_{code}",
+        group_by=f"comparator_simple_{code}",
         #small_number_suppression=apply_suppression
     )
     measures.append(m)
 
-for code in path_tests:
     m = Measure(
-        # rate of comparators being present for each test, split by numeric value:
+        # 4.a rate of comparators being present for each test, split by comparator and numeric value:
+        # NB produces very long df because every possible value is repeated for each comparator
         id=f'{code}_comparator_rate_by_value',
-        numerator=f"comparator_flag_{code}",
+        numerator=f"flag_{code}", # here we have same num and denom but we just need one count for further processing
         denominator=f"flag_{code}",
-        group_by=f"value_{code}",
+        group_by=[f"comparator_simple_{code}", f"value_{code}"],
         #small_number_suppression=apply_suppression
     )
     measures.append(m)
