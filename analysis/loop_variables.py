@@ -47,17 +47,58 @@ def make_variable(code, index_date):
             )
         ),
 
-        # binary flag for comparators
-        f"comparator_flag_{code}":(
+        # simplified comparators
+        f"comparator_simple_{code}":(
+            patients.categorised_as(
+                {
+                "=": "DEFAULT",
+                ">=": f'comparator_{code} = ">" OR comparator_{code} = ">="',
+                "<=": f'comparator_{code} = "<" OR comparator_{code} = "<="',
+                },
+                return_expectations={
+                    "incidence": 0.9,
+                    "category": {
+                        "ratios": {
+                            "=": 0.8,
+                            ">=": 0.1,
+                            "<=": 0.1}
+                        },
+                },
+            )
+        ),
+
+        # binary flag for comparator > or >=
+        f"comparator_gt_{code}":(
             patients.satisfying(
-                f"comparator_{code}='<'",
+                f"comparator_simple_{code}='>='",
                 return_expectations={
                     "incidence": 0.1,
                 },
             )
         ),
 
-        # binary flag for each test (with numeric result)
+        # binary flag for comparator < or <=
+        f"comparator_lt_{code}":(
+            patients.satisfying(
+                f"comparator_simple_{code}='<='",
+                return_expectations={
+                    "incidence": 0.1,
+                },
+            )
+        ),
+
+        # binary flag for any comparator
+        f"comparator_flag_{code}":(
+            patients.satisfying(
+                f"comparator_gt_{code} OR comparator_lt_{code}",
+                return_expectations={
+                    "incidence": 0.1,
+                },
+            )
+        ),
+
+    
+        # binary flag for having each test (with numeric result)
         f"flag_{code}":(
             patients.satisfying(
                 f"value_{code}",
