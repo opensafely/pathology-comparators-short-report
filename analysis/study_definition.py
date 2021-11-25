@@ -94,13 +94,15 @@ study = StudyDefinition(
         "index_date",
         returning="pseudo_id",
         return_expectations={
-            "int": {"distribution": "normal", "mean": 25, "stddev": 5}, "incidence": 0.5}
+            "int": {"distribution": "normal", "mean": 25, "stddev": 5}, "incidence": 0.99}
     ),
 
     region=patients.registered_practice_as_of(
         "index_date",
         returning="nuts1_region_name",
-        return_expectations={"category": {"ratios": {
+        return_expectations={
+            "incidence":0.9,
+            "category": {"ratios": {
             "North East": 0.1,
             "North West": 0.1,
             "Yorkshire and the Humber": 0.1,
