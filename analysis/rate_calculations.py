@@ -100,25 +100,38 @@ for measure in measures_no_codes:
     # 4. Rate of comparators being present for each test, split by comparator and numeric value:
     elif measure == "comparator_rate_by_value":
         # create empty df for results
-        summary = pd.DataFrame(columns=["code", "value", "<=", "=", ">="])
+        summary = pd.DataFrame(columns=["code", "value", "<=", ">="])
         summary = summary.set_index(['code', 'value'])
 
         for code, term in zip(measures_filtered.code, measures_filtered.term):
         
             # load measures data
             df = pd.read_csv(os.path.join(OUTPUT_DIR, f'measure_{code}_{measure}.csv'), parse_dates=['date']).sort_values(by='date')
+            # filter to comparators (should affect dummy data only)
+            df = df.loc[df[f"comparator_simple_{code}"].isin(["<=", ">="])] 
 
             # sum denominators for each comparator across each week (denominator is no of tests each week not population, so can be summed)
-            total = df.groupby([f"comparator_simple_{code}",f"value_{code}"])[f"flag_{code}"].sum().fillna(0).astype(int)
+            total = df.groupby([f"comparator_simple_{code}",f"value_{code}"])[f"comparator_flag_{code}"].sum().fillna(0).astype(int)
             total = total.unstack(level=0) # make comparators the columns
-            total = total.loc[total.sum(axis=1)>0] # remove rows with no data
+            total = total.loc[total.sum(axis=1)>0] # remove rows with no data (because of how measures are produced, 
+                                                    # each value will be repeated for each comparator even if no occurrences)
             
             total = pd.concat({code: total}, names=['code']) # add new index
 
-            print(total)
+            # load no-comparators data 
+            df = pd.read_csv(os.path.join(OUTPUT_DIR, f'measure_{code}_no_{measure}.csv'), parse_dates=['date']).sort_values(by='date')
+           
+            # sum denominators across each week 
+            total2 = df.groupby([f"value_{code}"])[f"no_comparator_flag_{code}"].sum().fillna(0).astype(int)
+            total2 = total2.rename("=")
+            
+            total2 = pd.concat({code: total2}, names=['code']) # add new index            
+            
+            total = total.join(total2, how="outer").fillna(0).astype(int)
             
             # concatenate results
             summary = summary.append(total)
+
         print(summary)
 
     summary.to_csv(os.path.join(OUTPUT_DIR, f'{measure}_rates_per_test.csv'))
