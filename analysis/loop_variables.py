@@ -97,7 +97,16 @@ def make_variable(code, index_date):
             )
         ),
 
-    
+        # binary flag for No comparator
+        f"no_comparator_flag_{code}":(
+            patients.satisfying(
+                f"NOT comparator_flag_{code}",
+                return_expectations={
+                    "incidence": 0.9,
+                },
+            )
+        ),
+
         # binary flag for having each test (with numeric result)
         f"flag_{code}":(
             patients.satisfying(
