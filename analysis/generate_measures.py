@@ -37,11 +37,21 @@ for code in path_tests:
 
     m = Measure(
         # 4.a rate of comparators being present for each test, split by comparator and numeric value:
-        # NB produces very long df because every possible value is repeated for each comparator
         id=f'{code}_comparator_rate_by_value',
-        numerator=f"flag_{code}", # here we have same num and denom but we just need one count for further processing
-        denominator=f"flag_{code}",
+        numerator=f"comparator_flag_{code}", # here we have same num and denom but we just need one count for further processing
+        denominator=f"comparator_flag_{code}",
         group_by=[f"comparator_simple_{code}", f"value_{code}"],
+        #small_number_suppression=apply_suppression
+    )
+    measures.append(m)
+
+    m = Measure(
+        # 4.b rate of each numeric values for each test, with no comparator:
+        # NB may produce very long df where there is a wide range of possible values
+        id=f'{code}_no_comparator_rate_by_value',
+        numerator=f"no_comparator_flag_{code}", # here we have same num and denom but we just need one count for further processing
+        denominator=f"no_comparator_flag_{code}",
+        group_by=[f"value_{code}"],
         #small_number_suppression=apply_suppression
     )
     measures.append(m)
