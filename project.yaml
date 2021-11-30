@@ -7,10 +7,10 @@ actions:
 
   
   generate_study_population:
-    run: cohortextractor:latest generate_cohort --study-definition study_definition --index-date-range "2021-10-01 to 2021-10-08 by week" --output-dir=output
+    run: cohortextractor:latest generate_cohort --study-definition study_definition --index-date-range "2021-10-01 to 2021-10-08 by week" --output-dir=output --output-format=feather
     outputs:
       highly_sensitive:
-        cohort: output/input_*.csv
+        cohort: output/input_*.feather
 
 
   # generate_study_population_practice_count:

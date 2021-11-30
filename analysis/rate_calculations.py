@@ -134,4 +134,4 @@ for measure in measures_no_codes:
 
         print(summary)
 
-    summary.to_csv(os.path.join(OUTPUT_DIR, f'{measure}_rates_per_test.csv'))
+    summary.to_csv(os.path.join(OUTPUT_DIR, f'{measure}_per_test.csv'))
