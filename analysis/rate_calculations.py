@@ -1,3 +1,7 @@
+''' Process measure files:
+ - aggregate over all weeks; 
+ - for each measure, compile all tests into one file with names'''
+
 from pathlib import Path
 import pandas as pd
 import os
@@ -50,13 +54,12 @@ for measure in measures_no_codes:
 
         # create empty df for results - import a random file to get list of regions
         df = pd.read_csv(os.path.join(OUTPUT_DIR, f'measure_{measures_df["code"].iloc[0]}_{measure}.csv'), parse_dates=['date'])
-        regions = df.fillna("Unknown").region.drop_duplicates()
+        regions = list(df.fillna("Unknown").region.drop_duplicates().values)
         
-        summary = pd.DataFrame(columns=regions)
-        summary['code'] = None
-        summary['item'] = None
-        summary = summary.set_index(['code', 'item'])
-
+        columns=regions
+        columns.extend(['code', 'item','description'])
+        summary = pd.DataFrame(columns=columns)
+        summary = summary.set_index(['code', 'description', 'item'])
 
         for code, term, numerator in zip(measures_filtered.code, measures_filtered.term, measures_filtered.numerator):
         
@@ -71,6 +74,7 @@ for measure in measures_no_codes:
 
             # reorganise index
             total.index = total.index.str.replace(f"_{code}","")
+            total = pd.concat({term: total}, names=['description']) # add new index
             total = pd.concat({code: total}, names=['code']) # add new index
             
             # concatenate results
