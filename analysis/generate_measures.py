@@ -16,17 +16,7 @@ for code in path_tests:
     measures.append(m)
 
     m = Measure(
-        # 2. Overall rate of comparators being present for each test, split by region:
-        id=f'{code}_comparator_rate_by_region',
-        numerator=f"comparator_flag_{code}",
-        denominator=f"flag_{code}",
-        group_by="region",
-        #small_number_suppression=apply_suppression
-    )
-    measures.append(m)
-
-    m = Measure(
-        # 3. rate of comparators being present for each test, split by comparator (simplified):
+        # 2. rate of comparators being present for each test, split by comparator (simplified):
         id=f'{code}_comparator_rate_by_comparator',
         numerator=f"comparator_flag_{code}", # this won't produce a figure for "=" but we can calculate by subtraction
         denominator=f"flag_{code}",  ###### could use smaller denominator here...
@@ -34,6 +24,17 @@ for code in path_tests:
         #small_number_suppression=apply_suppression
     )
     measures.append(m)
+
+    m = Measure(
+        # 3. Cmparators used for each test, split by comparator and region:
+        id=f'{code}_comparator_rate_by_region',
+        numerator=f"comparator_flag_{code}",
+        denominator=f"flag_{code}",
+        group_by=[f"comparator_simple_{code}", "region"],
+        #small_number_suppression=apply_suppression
+    )
+    measures.append(m)
+
 
     m = Measure(
         # 4.a rate of comparators being present for each test, split by comparator and numeric value:
