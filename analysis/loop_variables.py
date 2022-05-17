@@ -21,7 +21,7 @@ def make_variable(code, index_date):
                 find_last_match_in_period=True,
                 return_expectations={
                     "incidence": 0.2,
-                    "float": {"distribution": "normal", "mean": 10, "stddev": 1},
+                    "int": {"distribution": "normal", "mean": 50, "stddev": 3},
                 },
             )
         ),
