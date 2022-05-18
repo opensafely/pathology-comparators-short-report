@@ -1,104 +1,159 @@
-from utilities import *
+''' Process measure files:
+ - aggregate over all weeks; 
+ - for each measure, compile all tests into one file with names'''
+
 from pathlib import Path
 import pandas as pd
 import os
-from cohortextractor import Measure
-from config import demographics, codelist_path
-from ebmdatalab import charts
+from generate_measures import measures
+
+
+def calculate_rates(df):
+    ''' calculate rates as decimals (num/denom) for each column in a df, where denom is the sum of the column values'''
+    summary_cols = df.columns
+    df["total"] = df.sum(axis=1)
+    df = df.loc[df["total"]>0]
+    #print(df["total"])
+    for c in summary_cols:
+        df[f"{c}_rate"] = (df[c]/df["total"])
+    return df
+
+
+
+# A measure file has been created for each test and for each measure, 
+# We want to remove test codes from measure names to get
+# a list of unique measures (e.g. "comparator_rate_by_region")
+# and a list of unique codes
+measures_df = pd.DataFrame(columns=["code","numerator", "measure_no_code"])
+for m in measures:
+    start = m.id.find('_') # extract snomed code from beginning of string
+    measures_df.loc[m.id] = [int(m.id[:start]), m.numerator, m.id[start+1:]]
+
+# make list of distinct measures without test codes included
+measures_no_codes = measures_df.measure_no_code.drop_duplicates().values
+
+measures_df = measures_df.reset_index().rename(columns={"index":"measure"})
+
+###### TODO add code descriptions to measures df
 
 BASE_DIR = Path(__file__).parents[1]
 OUTPUT_DIR = BASE_DIR / "output"
 
-# Create default measures
-measures = [
-
-    Measure(
-        id="event_code_rate",
-        numerator="event",
-        denominator="population",
-        group_by=["event_code"]
-    ),
-
-    Measure(
-        id="practice_rate",
-        numerator="event",
-        denominator="population",
-        group_by=["practice"]
-    ),
-
-
-
-]
-
-#Add demographics measures
-
-for d in demographics:
+for measure in measures_no_codes:
+    measures_filtered = measures_df.loc[measures_df["measure_no_code"]==measure]
+    
+    # 1. basic measure - comparator rate per code
+    if measure == "comparator_rate":
+        # create empty df for results
+        summary = pd.DataFrame(columns=["numerator", "denominator", "rate"])
+        print(measure)
+        for code, numerator in zip(measures_filtered.code, measures_filtered.numerator):
+            # load measures data
+            df = pd.read_csv(os.path.join(OUTPUT_DIR, f'measure_{code}_{measure}.csv'), parse_dates=['date']).sort_values(by='date')
  
-    m = Measure(
-        id=f'{d}_rate',
-        numerator="event",
-        denominator="population",
-        group_by=[d]
-    )
-    
-    measures.append(m)
+            # sum numerators and denominators across each week (denominator is no of tests each week not population, so can be summed)
+            total = df.sum()
+            summary.loc[code] = [total[numerator], 
+                                total[f"flag_{code}"], # all measures have same denominator
+                                total[numerator]/total[f"flag_{code}"]]
 
+    # 2. by comparator
+    elif measure == "comparator_rate_by_comparator":
+        print(measure)
+        # create empty df for results
+        summary = pd.DataFrame(columns=["<=", "=", ">="])
 
-
-measures_dict = {}
-
-for m in measures:
-    measures_dict[m.id] = m
-
-
-for key, value in measures_dict.items():
-    
-    df = pd.read_csv(os.path.join(OUTPUT_DIR, f'measure_{value.id}.csv'), parse_dates=['date']).sort_values(by='date')
-    df = drop_missing_demographics(df, value.group_by[0])
-
-    if key == "ethnicity_rate":
-        df = convert_ethnicity(df)
+        for code in measures_filtered.code:
         
-    df = calculate_rate(df, numerator=value.numerator, denominator=value.denominator, rate_per=1000)
-    
-    if key == "imd_rate":
-        df = calculate_imd_group(df, value.numerator, 'rate')
-        df = redact_small_numbers(df, 5, value.numerator, value.denominator, 'rate')
-    
-    elif key == "care_home_status_rate":
-        df = convert_binary(df, 'care_home_status', 'Record of positive care home status', 'No record of positive care home status')
+            # load measures data
+            df = pd.read_csv(os.path.join(OUTPUT_DIR, f'measure_{code}_{measure}.csv'), parse_dates=['date']).sort_values(by='date')
+            df = df.fillna("=") # fill any missing comparators
 
-    elif key =='learning_disability_rate':
-        df = convert_binary(df, 'learning_disability', 'Record of learning disability', 'No record of learning disability')
-
-
-    # get total population rate
-    if value.id=='practice_rate':
+            # sum numerators and denominators for each comparator across each week (denominator is no of tests each week not population, so can be summed)
+            total = df.groupby(f"comparator_simple_{code}")[f"flag_{code}"].sum().fillna(0).astype(int)
+            # keep only test code from series name ("flag_{code}")
+            total = total.rename(total.name[5:])
+            
+            # concatenate results
+            summary = summary.append(total)
         
-        df = drop_irrelevant_practices(df, 'practice')
-        df.to_csv(os.path.join(OUTPUT_DIR, f'rate_table_{value.group_by[0]}.csv'), index=False)
+        # calculate rates
+        summary = calculate_rates(summary)
 
-        charts.deciles_chart(
-        df,
-        period_column='date',
-        column='event',
-        title='Decile Chart',
-        ylabel='rate per 1000',
-        show_outer_percentiles=False,
-        show_legend=True,
-        ).savefig('output/decile_chart.png', bbox_inches='tight')  
+
+    # 3. Overall rate of comparators being present for each test, split by region or value:
+    elif measure in ["comparator_rate_by_region"]:
+        print(measure)
+        # create empty df for results - import any of the files to get list of regions
+        splitter = measure.split("_")[-1] # "region" or (numeric) value
+        # use one file to get list of possible values
+        df = pd.read_csv(os.path.join(OUTPUT_DIR, f'measure_{measures_df["code"].iloc[0]}_{measure}.csv'), parse_dates=['date'])
+        df = df.fillna("Unknown") # fill any missing regions
+
+        column_list = list(df[splitter].drop_duplicates().values)
+        column_list.extend(['code', 'item'])
+        summary = pd.DataFrame(columns=column_list).set_index(['code', 'item'])
+
+        for code, numerator in zip(measures_filtered.code, measures_filtered.numerator):
+            # load measures data
+            df = pd.read_csv(os.path.join(OUTPUT_DIR, f'measure_{code}_{measure}.csv'), parse_dates=['date']).sort_values(by='date')
+            df = df.drop(columns=["value"])
+
+            df = df.fillna("Unknown") # fill any missing regions                
+
+            # sum numerators and denominators for each comparator across each week (denominator is no of tests each week not population, so can be summed)
+            total = df.groupby(splitter).sum().fillna(0).astype(int)
+            
+            # calculate rates
+            total["rate"] = total[numerator]/total[f"flag_{code}"]
+            total = total.transpose()
+
+            # reorganise index
+            total.index = total.index.str.replace(f"_{code}","")
+            total = pd.concat({code: total}, names=['code']) # add new index
+            
+            # concatenate results
+            summary = summary.append(total)
+
+    # 4. Rate of comparators being present for each test, split by comparator and numeric value:
+    elif measure == "comparator_rate_by_value":
+        print(measure)
+        # create empty df for results
+        summary = pd.DataFrame(columns=["code", "num_value", "<=", ">="])
+        summary = summary.set_index(['code', 'num_value'])
+
+        for code in measures_filtered.code:
         
-        df_total = df.groupby(by='date')[[value.numerator, value.denominator]].sum().reset_index()
-        df_total = calculate_rate(df_total, numerator=value.numerator, denominator=value.denominator, rate_per=1000)
-        plot_measures(df_total, filename='plot_total.png', title='Population Rate', column_to_plot='rate', category=None, y_label='Rate per 1000')
-        df_total.to_csv(os.path.join(OUTPUT_DIR, 'rate_table_total.csv'), index=False)
+            # load measures data
+            df = pd.read_csv(os.path.join(OUTPUT_DIR, f'measure_{code}_{measure}.csv'), parse_dates=['date']).sort_values(by='date')
+            # filter to unequal comparators (should affect dummy data only), also where count>0
+            df = df.drop(columns=["value"]).loc[df[f"comparator_simple_{code}"].isin(["<=", ">="]) & (df[f"comparator_flag_{code}"]>0)] 
 
-    elif value.id=='event_code_rate':
-        df.to_csv(os.path.join(OUTPUT_DIR, f'rate_table_{value.group_by[0]}.csv'), index=False)
-        codelist = pd.read_csv(codelist_path)
-        child_code_table = create_child_table(df=df, code_df=codelist, code_column='code', term_column='term')
-        child_code_table.to_csv('output/child_code_table.csv', index=False)
+            # sum denominators for each comparator across each week (denominator is no of tests each week not population, so can be summed)
+            total = df.groupby([f"comparator_simple_{code}",f"value_{code}"])[f"comparator_flag_{code}"].sum().fillna(0).astype(int)
+            total = total.unstack(level=0) # make comparators the columns
+            total = total.loc[total.sum(axis=1)>0] # remove rows with no data (because of how measures are produced, 
+                                                    # each value will be repeated for each comparator even if no occurrences)
+            
+            total = pd.concat({code: total}, names=['code']) # add new index
 
-    else:
-        plot_measures(df, filename=f'plot_{value.group_by[0]}.png', title=f'Breakdown by {value.group_by[0]}', column_to_plot='rate', category=value.group_by[0], y_label='Rate per 1000')
-        df.to_csv(os.path.join(OUTPUT_DIR, f'rate_table_{value.group_by[0]}.csv'), index=False)
+            # load no-comparators data 
+            df = pd.read_csv(os.path.join(OUTPUT_DIR, f'measure_{code}_no_{measure}.csv'), parse_dates=['date']).sort_values(by='date')
+        
+            # sum denominators across each week 
+            total2 = df.groupby([f"value_{code}"])[f"no_comparator_flag_{code}"].sum().fillna(0).astype(int)
+            total2 = total2.rename("=")
+            
+            total2 = pd.concat({code: total2}, names=['code']) # add new index            
+            
+            total = total.join(total2, how="outer").fillna(0).astype(int)
+            
+            # concatenate results
+            summary = summary.append(total)
+
+        # calculate rates
+        summary = calculate_rates(summary)
+
+
+    print(summary)
+    summary.to_csv(os.path.join(OUTPUT_DIR, f'{measure}_per_test.csv'))

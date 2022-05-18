@@ -7,62 +7,48 @@ actions:
 
   
   generate_study_population:
-    run: cohortextractor:latest generate_cohort --study-definition study_definition --index-date-range "2021-06-01 to 2021-12-01 by month" --output-dir=output
+    run: cohortextractor:latest generate_cohort --study-definition study_definition --index-date-range "2021-10-01 to 2021-10-08 by week" --output-dir=output --output-format=feather
     outputs:
       highly_sensitive:
-        cohort: output/input_*.csv
+        cohort: output/input_*.feather
 
-  generate_study_population_ethnicity:
-    run: cohortextractor:latest generate_cohort --study-definition study_definition_ethnicity --output-dir=output
+  generate_report:
+    run: cohort-report:v3.0.0 output/input_2021-10-01.feather
+    needs: [generate_study_population]
+    config:
+      output_path: output/cohort_reports_outputs
     outputs:
-      highly_sensitive:
-        cohort: output/input_ethnicity.csv
-
-  join_ethnicity:
-    run: python:latest python analysis/join_ethnicity.py
-    needs: [generate_study_population, generate_study_population_ethnicity]
-    outputs:
-      highly_sensitive:
-        cohort: output/input*.csv
-
-  generate_study_population_practice_count:
-    run: cohortextractor:latest generate_cohort --study-definition study_definition_practice_count --index-date-range "2021-06-01 to 2021-12-01 by month" --output-dir=output
-    outputs:
-      highly_sensitive:
-        cohort: output/input_practice_count_*.csv
+      moderately_sensitive:
+        reports: output/cohort_reports_outputs/descriptives_input_2021-10-01.html
 
   generate_measures:
       run: cohortextractor:latest generate_measures --study-definition study_definition --output-dir=output
-      needs: [join_ethnicity]
+      needs: [generate_study_population]
       outputs:
         moderately_sensitive:
-          measure_csv: output/measure_*_rate.csv
+          measure_csv_1: output/measure_*_rate.csv
+          measure_csv_2: output/measure_*_rate_by_region.csv
+          measure_csv_3: output/measure_*_rate_by_comparator.csv
+          measure_csv_4: output/measure_*_rate_by_value.csv
+          # note the weekly files are not stored, only the compiled file
   
   calculate_rates:
       run: python:latest python analysis/rate_calculations.py
       needs: [generate_measures]
       outputs:
         moderately_sensitive:
-          tables: output/rate_table_*.csv
-          child_code_table: output/child_code_table.csv
-          plots: output/plot_*.png
-          decile_chart: output/decile_chart.png
+          tables: output/*_per_test.csv
+
   
-  create_notebook:
-    run: python:latest python analysis/create_notebook.py
-    outputs:
-      moderately_sensitive:
-        notebook: analysis/SRO_Notebook.ipynb
+  # generate_notebook:
+  #   run: jupyter:latest jupyter nbconvert /workspace/analysis/SRO_Notebook.ipynb --execute --to html --output-dir=/workspace/output --ExecutePreprocessor.timeout=86400 --no-input
+  #   needs: [create_notebook, calculate_rates, generate_study_population_practice_count]
+  #   outputs:
+  #     moderately_sensitive:
+  #       notebook: output/SRO_Notebook.html
 
-  generate_notebook:
-    run: jupyter:latest jupyter nbconvert /workspace/analysis/SRO_Notebook.ipynb --execute --to html --output-dir=/workspace/output --ExecutePreprocessor.timeout=86400 --no-input
-    needs: [create_notebook, calculate_rates, generate_study_population_practice_count]
-    outputs:
-      moderately_sensitive:
-        notebook: output/SRO_Notebook.html
-
-  run_tests:
-    run: python:latest python -m pytest --junit-xml=output/pytest.xml --verbose
-    outputs:
-      moderately_sensitive:
-        log: output/pytest.xml
+  # run_tests:
+  #   run: python:latest python -m pytest --junit-xml=output/pytest.xml --verbose
+  #   outputs:
+  #     moderately_sensitive:
+  #       log: output/pytest.xml
