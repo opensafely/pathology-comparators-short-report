@@ -20,10 +20,9 @@ def calculate_rates(df):
 
 
 
-# A measure file has been created for each test and for each measure, 
-# We want to remove test codes from measure names to get
-# a list of unique measures (e.g. "comparator_rate_by_region")
-# and a list of unique codes
+# A measure file has been created for each measure *for each test*, 
+# First we create a list of the unique measures (e.g. "comparator_rate_by_region")
+# and a list of unique codes by separating test codes from measure names
 measures_df = pd.DataFrame(columns=["code","numerator", "measure_no_code"])
 for m in measures:
     start = m.id.find('_') # extract snomed code from beginning of string
@@ -50,9 +49,10 @@ for measure in measures_no_codes:
         for code, numerator in zip(measures_filtered.code, measures_filtered.numerator):
             # load measures data
             df = pd.read_csv(os.path.join(OUTPUT_DIR, f'measure_{code}_{measure}.csv'), parse_dates=['date']).sort_values(by='date')
- 
             # sum numerators and denominators across each week (denominator is no of tests each week not population, so can be summed)
             total = df.sum()
+            # round to nearest 10
+            total = 10*((total/10).round(0))
             summary.loc[code] = [total[numerator], 
                                 total[f"flag_{code}"], # all measures have same denominator
                                 total[numerator]/total[f"flag_{code}"]]
@@ -71,8 +71,12 @@ for measure in measures_no_codes:
 
             # sum numerators and denominators for each comparator across each week (denominator is no of tests each week not population, so can be summed)
             total = df.groupby(f"comparator_simple_{code}")[f"flag_{code}"].sum().fillna(0).astype(int)
+            
             # keep only test code from series name ("flag_{code}")
             total = total.rename(total.name[5:])
+
+            # round to nearest 10
+            total = 10*((total/10).round(0))
             
             # concatenate results
             summary = summary.append(total)
@@ -104,6 +108,9 @@ for measure in measures_no_codes:
             # sum numerators and denominators for each comparator across each week (denominator is no of tests each week not population, so can be summed)
             total = df.groupby(splitter).sum().fillna(0).astype(int)
             
+            # round to nearest 10
+            total = 10*((total/10).round(0))
+
             # calculate rates
             total["rate"] = total[numerator]/total[f"flag_{code}"]
             total = total.transpose()
@@ -147,6 +154,9 @@ for measure in measures_no_codes:
             total2 = pd.concat({code: total2}, names=['code']) # add new index            
             
             total = total.join(total2, how="outer").fillna(0).astype(int)
+
+            # round to nearest 10
+            total = 10*((total/10).round(0))
             
             # concatenate results
             summary = summary.append(total)

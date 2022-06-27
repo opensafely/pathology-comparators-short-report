@@ -127,17 +127,6 @@ def calculate_rate(df, numerator, denominator, rate_per=1000):
     
     return df
         
-def drop_irrelevant_practices(df, practice_col):
-    """Drops irrelevant practices from the given measure table.
-    An irrelevant practice has zero events during the study period.
-    Args:
-        df: A measure table.
-        practice_col: column name of practice column
-    Returns:
-        A copy of the given measure table with irrelevant practices dropped.
-    """
-    is_relevant = df.groupby(practice_col).value.any()
-    return df[df[practice_col].isin(is_relevant[is_relevant == True].index)]
 
 
 def create_child_table(
@@ -184,34 +173,7 @@ def create_child_table(
     
     return event_counts.iloc[:nrows, :]
 
-def get_number_practices(df):
-    """Gets the number of practices in the given measure table.
-    Args:
-        df: A measure table.
-    """
-    return len(df.practice.unique())
 
-
-def get_percentage_practices(measure_table):
-    """Gets the percentage of practices in the given measure table.
-    Args:
-        measure_table: A measure table.
-    """
-
-    # Read in all input practice count files and get num unique
-    practice_df_list = []
-    for file in os.listdir(OUTPUT_DIR):
-        if file.startswith("input_practice_count"):
-            df = pd.read_csv(os.path.join(OUTPUT_DIR, file))
-            practice_df_list.append(df)
-
-    total_practices_df = pd.concat(practice_df_list, axis=0)
-    num_practices_total= get_number_practices(total_practices_df)
-
-    # Get number of practices in measure
-    num_practices_in_study = get_number_practices(measure_table)
-
-    return np.round((num_practices_in_study / num_practices_total) * 100, 2)
 
 def plot_measures(df, filename, title, column_to_plot, category=False, y_label='Rate per 1000'):
     """Produce time series plot from measures table.  One line is plotted for each sub
