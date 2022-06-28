@@ -115,5 +115,27 @@ def make_variable(code, index_date):
                     "incidence": 0.2,
                 },
             )
-        )
+        ),
+
+        # lower reference value of each test
+        f"lower_bound_{code}": (
+            patients.reference_range_lower_bound_from(
+                f"value_{code}",
+                return_expectations={
+                    "incidence": 0.5,
+                    "float": {"distribution": "normal", "mean": 10, "stddev": 3},
+                },
+            )
+        ),
+
+        # upper reference value of each test
+        f"upper_bound_{code}": (
+            patients.reference_range_upper_bound_from(
+                f"value_{code}",
+                return_expectations={
+                    "incidence": 0.5,
+                    "float": {"distribution": "normal", "mean": 50, "stddev": 3},
+                },
+            )
+        ),
     }

@@ -57,3 +57,22 @@ for code in path_tests:
     )
     measures.append(m)
 
+    m = Measure(
+        # 5.a lower reference value for each test:
+        id=f'{code}_lower_bound_rate',
+        numerator=f"flag_{code}", 
+        denominator=f"flag_{code}",
+        group_by=f"lower_bound_{code}",
+        #small_number_suppression=apply_suppression
+    )
+    measures.append(m)
+
+    m = Measure(
+        # 5.b upper reference value for each test:
+        id=f'{code}_upper_bound_rate',
+        numerator=f"flag_{code}", 
+        denominator=f"flag_{code}",
+        group_by=f"upper_bound_{code}",
+        #small_number_suppression=apply_suppression
+    )
+    measures.append(m)

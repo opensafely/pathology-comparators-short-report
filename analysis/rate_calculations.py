@@ -135,7 +135,9 @@ for measure in measures_no_codes:
             df = pd.read_csv(os.path.join(OUTPUT_DIR, f'measure_{code}_{measure}.csv'), parse_dates=['date']).sort_values(by='date')
             # filter to unequal comparators (should affect dummy data only), also where count>0
             df = df.drop(columns=["value"]).loc[df[f"comparator_simple_{code}"].isin(["<=", ">="]) & (df[f"comparator_flag_{code}"]>0)] 
-
+            # round numeric values to 1dp
+            # (most are rounded anyway but some smaller values appear with artefactual dps e.g. 2.09979..)
+            df[f"value_{code}"] = df[f"value_{code}"].round(1)
             # sum denominators for each comparator across each week (denominator is no of tests each week not population, so can be summed)
             total = df.groupby([f"comparator_simple_{code}",f"value_{code}"])[f"comparator_flag_{code}"].sum().fillna(0).astype(int)
             total = total.unstack(level=0) # make comparators the columns
@@ -163,7 +165,9 @@ for measure in measures_no_codes:
 
         # calculate rates
         summary = calculate_rates(summary)
-
+    
+    else:
+        continue
 
     print(summary)
     summary.to_csv(os.path.join(OUTPUT_DIR, f'{measure}_per_test.csv'))
