@@ -30,7 +30,6 @@ for m in measures:
 
 # make list of distinct measures without test codes included
 measures_no_codes = measures_df.measure_no_code.drop_duplicates().values
-
 measures_df = measures_df.reset_index().rename(columns={"index":"measure"})
 
 ###### TODO add code descriptions to measures df
@@ -136,7 +135,7 @@ for measure in measures_no_codes:
             # filter to unequal comparators (should affect dummy data only), also where count>0
             df = df.drop(columns=["value"]).loc[df[f"comparator_simple_{code}"].isin(["<=", ">="]) & (df[f"comparator_flag_{code}"]>0)] 
             # round numeric values to 1dp
-            # (most are rounded anyway but some smaller values appear with artefactual dps e.g. 2.09979..)
+            # (most are rounded anyway but some smaller values appear with (artefactual?) dps e.g. 2.099997..)
             df[f"value_{code}"] = df[f"value_{code}"].round(1)
             # sum denominators for each comparator across each week (denominator is no of tests each week not population, so can be summed)
             total = df.groupby([f"comparator_simple_{code}",f"value_{code}"])[f"comparator_flag_{code}"].sum().fillna(0).astype(int)
@@ -145,7 +144,7 @@ for measure in measures_no_codes:
                                                     # each value will be repeated for each comparator even if no occurrences)
             
             total = pd.concat({code: total}, names=['code']) # add new index
-
+            
             # load no-comparators data 
             df = pd.read_csv(os.path.join(OUTPUT_DIR, f'measure_{code}_no_{measure}.csv'), parse_dates=['date']).sort_values(by='date')
         
@@ -159,13 +158,49 @@ for measure in measures_no_codes:
 
             # round to nearest 10
             total = 10*((total/10).round(0))
-            
             # concatenate results
             summary = summary.append(total)
 
         # calculate rates
         summary = calculate_rates(summary)
     
+
+    # 5. reference values
+    # note these will vary depending on lab, patient age etc but we will just summarise overall for now
+    elif measure in ("lower_bound_rate", "upper_bound_rate"):
+        print(measure)
+        bound_type = measure[:measure.find("_")]
+        # create empty df for results
+        summary = pd.DataFrame(columns=["code", bound_type, "count"])
+        summary = summary.set_index(['code', bound_type])
+
+        for code in measures_filtered.code:
+        
+            # load measures data
+            df = pd.read_csv(os.path.join(OUTPUT_DIR, f'measure_{code}_{measure}.csv'), parse_dates=['date']).sort_values(by='date')
+            
+            # replace invalid bound values (99999, 9999, -1) with 0 - these effectively have no bound
+            df.loc[df[f"{bound_type}_bound_{code}"]>9000, f"{bound_type}_bound_{code}"] = 0
+            df.loc[df[f"{bound_type}_bound_{code}"]<0, f"{bound_type}_bound_{code}"] = 0
+
+            # sum counts
+            total = df.groupby(f"{bound_type}_bound_{code}")[f"flag_{code}"].sum().fillna(0).astype(int)
+           
+            # round to nearest 10
+            total = 10*((total/10).round(0))
+            
+            # remove rows with zero counts after rounding
+            total = total.loc[total>0] 
+        
+            total = pd.concat({code: total}, names=['code']) # add new index
+            total = pd.DataFrame(total.rename("count"))
+
+            # calculate rate at which each bound value appears
+            total["rate"] = total["count"]/total["count"].sum()
+            
+            # concatenate results
+            summary = summary.append(total)
+        
     else:
         continue
 
