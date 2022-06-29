@@ -147,7 +147,10 @@ for measure in measures_no_codes:
             
             # load no-comparators data 
             df = pd.read_csv(os.path.join(OUTPUT_DIR, f'measure_{code}_no_{measure}.csv'), parse_dates=['date']).sort_values(by='date')
-        
+            # round numeric values to 1dp
+            # (most are rounded anyway but some smaller values appear with (artefactual?) dps e.g. 2.099997..)
+            df[f"value_{code}"] = df[f"value_{code}"].round(1)
+
             # sum denominators across each week 
             total2 = df.groupby([f"value_{code}"])[f"no_comparator_flag_{code}"].sum().fillna(0).astype(int)
             total2 = total2.rename("=")
@@ -182,6 +185,10 @@ for measure in measures_no_codes:
             # replace invalid bound values (99999, 9999, -1) with 0 - these effectively have no bound
             df.loc[df[f"{bound_type}_bound_{code}"]>9000, f"{bound_type}_bound_{code}"] = 0
             df.loc[df[f"{bound_type}_bound_{code}"]<0, f"{bound_type}_bound_{code}"] = 0
+
+            # round numeric values to 1dp
+            # (most are rounded anyway but some smaller values appear with (artefactual?) dps e.g. 2.099997..)
+            df[f"{bound_type}_bound_{code}"] = df[f"{bound_type}_bound_{code}"].round(1)
 
             # sum counts
             total = df.groupby(f"{bound_type}_bound_{code}")[f"flag_{code}"].sum().fillna(0).astype(int)
