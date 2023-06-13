@@ -1,0 +1,84 @@
+code,,comparator_flag,total,rate,term
+80274001,East,3060.0,3730.0,0.8203753351206434,Glomerular filtration rate
+80274001,South West,1750.0,6910.0,0.2532561505065123,Glomerular filtration rate
+992081000000101,Yorkshire and The Humber,510.0,990.0,0.5151515151515151,Rheumatoid factor
+992081000000101,East Midlands,820.0,1000.0,0.82,Rheumatoid factor
+992081000000101,East,1180.0,1540.0,0.7662337662337663,Rheumatoid factor
+992081000000101,London,410.0,430.0,0.9534883720930232,Rheumatoid factor
+992081000000101,North West,180.0,610.0,0.29508196721311475,Rheumatoid factor
+992081000000101,South East,190.0,240.0,0.7916666666666666,Rheumatoid factor
+992081000000101,South West,460.0,620.0,0.7419354838709677,Rheumatoid factor
+992081000000101,North East,250.0,330.0,0.7575757575757576,Rheumatoid factor
+992081000000101,West Midlands,340.0,360.0,0.9444444444444444,Rheumatoid factor
+999651000000107,Yorkshire and The Humber,30.0,140.0,0.21428571428571427,Plasma C reactive protein
+999651000000107,East Midlands,3780.0,7480.0,0.5053475935828877,Plasma C reactive protein
+999651000000107,East,30.0,130.0,0.2307692307692308,Plasma C reactive protein
+999651000000107,South East,130.0,720.0,0.18055555555555555,Plasma C reactive protein
+999651000000107,South West,600.0,3070.0,0.1954397394136808,Plasma C reactive protein
+999651000000107,North East,340.0,1550.0,0.21935483870967745,Plasma C reactive protein
+999651000000107,West Midlands,100.0,180.0,0.5555555555555556,Plasma C reactive protein
+1002571000000102,Yorkshire and The Humber,270.0,880.0,0.3068181818181818,Faecal calprotectin content
+1002571000000102,East Midlands,320.0,1140.0,0.2807017543859649,Faecal calprotectin content
+1002571000000102,East,520.0,1530.0,0.33986928104575165,Faecal calprotectin content
+1002571000000102,London,280.0,620.0,0.4516129032258064,Faecal calprotectin content
+1002571000000102,North West,160.0,390.0,0.41025641025641024,Faecal calprotectin content
+1002571000000102,South East,100.0,290.0,0.3448275862068966,Faecal calprotectin content
+1002571000000102,South West,120.0,480.0,0.25,Faecal calprotectin content
+1002571000000102,North East,20.0,220.0,0.09090909090909093,Faecal calprotectin content
+1002571000000102,West Midlands,160.0,250.0,0.64,Faecal calprotectin content
+1003301000000109,Yorkshire and The Humber,2110.0,6130.0,0.3442088091353997,Urine albumin level
+1003301000000109,East Midlands,1510.0,6200.0,0.2435483870967742,Urine albumin level
+1003301000000109,East,2150.0,6750.0,0.3185185185185185,Urine albumin level
+1003301000000109,London,930.0,2970.0,0.31313131313131315,Urine albumin level
+1003301000000109,North West,820.0,2460.0,0.3333333333333333,Urine albumin level
+1003301000000109,South East,810.0,2360.0,0.3432203389830508,Urine albumin level
+1003301000000109,South West,750.0,2690.0,0.2788104089219331,Urine albumin level
+1003301000000109,North East,250.0,460.0,0.5434782608695652,Urine albumin level
+1003301000000109,West Midlands,300.0,860.0,0.3488372093023256,Urine albumin level
+1010251000000109,Yorkshire and The Humber,240.0,1270.0,0.1889763779527559,Urine microalbumin level
+1010251000000109,East Midlands,740.0,2450.0,0.3020408163265306,Urine microalbumin level
+1010251000000109,East,800.0,2800.0,0.2857142857142857,Urine microalbumin level
+1010251000000109,North West,780.0,2280.0,0.34210526315789475,Urine microalbumin level
+1010251000000109,South East,260.0,580.0,0.4482758620689655,Urine microalbumin level
+1010251000000109,South West,310.0,1640.0,0.18902439024390244,Urine microalbumin level
+1010251000000109,North East,660.0,2170.0,0.30414746543778803,Urine microalbumin level
+1010251000000109,West Midlands,390.0,1240.0,0.3145161290322581,Urine microalbumin level
+1011481000000105,Yorkshire and The Humber,2410.0,25030.0,0.09628445864962046,EGFR calculated using creatinine CKDEC equation
+1011481000000105,East Midlands,14320.0,44600.0,0.3210762331838565,EGFR calculated using creatinine CKDEC equation
+1011481000000105,East,19790.0,58420.0,0.3387538514207463,EGFR calculated using creatinine CKDEC equation
+1011481000000105,London,8180.0,16020.0,0.5106117353308365,EGFR calculated using creatinine CKDEC equation
+1011481000000105,North West,2700.0,8210.0,0.32886723507917176,EGFR calculated using creatinine CKDEC equation
+1011481000000105,South East,3250.0,9090.0,0.35753575357535755,EGFR calculated using creatinine CKDEC equation
+1011481000000105,South West,8180.0,28340.0,0.2886379675370501,EGFR calculated using creatinine CKDEC equation
+1011481000000105,North East,4850.0,13080.0,0.3707951070336392,EGFR calculated using creatinine CKDEC equation
+1011481000000105,West Midlands,0.0,440.0,0.0,EGFR calculated using creatinine CKDEC equation
+1013671000000106,Yorkshire and The Humber,1680.0,2010.0,0.8358208955223879,Tissue transglutaminase immunoglobulin A level
+1013671000000106,East Midlands,1150.0,2010.0,0.572139303482587,Tissue transglutaminase immunoglobulin A level
+1013671000000106,East,280.0,2580.0,0.10852713178294572,Tissue transglutaminase immunoglobulin A level
+1013671000000106,London,20.0,170.0,0.1176470588235294,Tissue transglutaminase immunoglobulin A level
+1013671000000106,North West,100.0,550.0,0.18181818181818185,Tissue transglutaminase immunoglobulin A level
+1013671000000106,South East,150.0,460.0,0.32608695652173914,Tissue transglutaminase immunoglobulin A level
+1013671000000106,South West,140.0,300.0,0.4666666666666667,Tissue transglutaminase immunoglobulin A level
+1013671000000106,North East,10.0,460.0,0.021739130434782608,Tissue transglutaminase immunoglobulin A level
+1013671000000106,West Midlands,70.0,510.0,0.13725490196078433,Tissue transglutaminase immunoglobulin A level
+1020291000000106,Yorkshire and The Humber,5980.0,23060.0,0.2593235039028621,GFR calculated by abbreviated MDRD
+1020291000000106,East Midlands,17080.0,31560.0,0.541191381495564,GFR calculated by abbreviated MDRD
+1020291000000106,East,1770.0,16770.0,0.10554561717352416,GFR calculated by abbreviated MDRD
+1020291000000106,London,260.0,860.0,0.3023255813953488,GFR calculated by abbreviated MDRD
+1020291000000106,North West,7380.0,24700.0,0.2987854251012146,GFR calculated by abbreviated MDRD
+1020291000000106,South East,4010.0,9940.0,0.403420523138833,GFR calculated by abbreviated MDRD
+1020291000000106,South West,3570.0,14540.0,0.2455295735900963,GFR calculated by abbreviated MDRD
+1020291000000106,North East,1420.0,4490.0,0.31625835189309576,GFR calculated by abbreviated MDRD
+1020291000000106,West Midlands,4030.0,12660.0,0.3183254344391785,GFR calculated by abbreviated MDRD
+1022461000000100,Yorkshire and The Humber,0.0,380.0,0.0,Nucleated red blood cell count
+1022461000000100,East Midlands,11970.0,13560.0,0.8827433628318584,Nucleated red blood cell count
+1022461000000100,East,6610.0,6900.0,0.9579710144927536,Nucleated red blood cell count
+1022461000000100,South West,0.0,180.0,0.0,Nucleated red blood cell count
+1022461000000100,West Midlands,0.0,460.0,0.0,Nucleated red blood cell count
+1049361000000101,Yorkshire and The Humber,920.0,1050.0,0.8761904761904762,Quantitative faecal immunochemical test
+1049361000000101,East Midlands,500.0,810.0,0.6172839506172839,Quantitative faecal immunochemical test
+1049361000000101,East,850.0,1340.0,0.6343283582089553,Quantitative faecal immunochemical test
+1049361000000101,London,30.0,120.0,0.25,Quantitative faecal immunochemical test
+1049361000000101,North West,1560.0,1890.0,0.8253968253968254,Quantitative faecal immunochemical test
+1049361000000101,South East,430.0,570.0,0.7543859649122807,Quantitative faecal immunochemical test
+1049361000000101,South West,1160.0,1540.0,0.7532467532467533,Quantitative faecal immunochemical test

@@ -1,0 +1,7 @@
+num_value,term,total,>=,>=_rate
+90.0,Glomerular filtration rate,1890.0,1750.0,0.925925925925926
+60.0,Glomerular filtration rate,3190.0,3050.0,0.9561128526645768
+120.0,GFR calculated by abbreviated MDRD,130.0,110.0,0.8461538461538461
+60.0,GFR calculated by abbreviated MDRD,14790.0,13240.0,0.8951994590939825
+90.0,GFR calculated by abbreviated MDRD,33830.0,32210.0,0.9521135087200708
+90.0,EGFR calculated using creatinine CKDEC equation,66230.0,63690.0,0.9616487996376264
